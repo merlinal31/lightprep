@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>LIGHTPREP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0b0b12;
+    --surface: #15151f;
+    --surface2: #1c1c2a;
+    --border: #252535;
+    --text: #f0f0f5;
+    --text2: #8888a0;
+    --text3: #555570;
+    --accent: #00d4aa;
+    --accent2: #ff2a6d;
+    --purple: #7700ff;
+    --miami1: #ff2a6d;
+    --miami2: #00d4aa;
+    --miami3: #05d9e8;
+    --radius: 12px;
+    --safe-bottom: env(safe-area-inset-bottom,10px);
+  }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg); color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    max-width: 480px; margin: 0 auto;
+    padding-bottom: 82px;
+  }
+
+  /* Responsive desktop */
+  @media (min-width: 768px) {
+    body { max-width: 960px; padding: 0 24px 82px; }
+    .grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .card-img { height: 100px; }
+    .card-n { font-size: 13px; }
+    .header { padding: 14px 24px; }
+    .cat-h, .filter-strip { padding-left: 24px; padding-right: 24px; }
+    .grid, .li-container, .l-page, .saved-grid, .date-list, .pf { padding-left: 24px; padding-right: 24px; }
+    .ls { padding-left: 24px; padding-right: 24px; }
+    .btm-cta, .ls { padding-left: 24px; padding-right: 24px; }
+    .tab-bar { max-width: 960px; }
+    .pf { max-width: 640px; }
+  }
+  @media (min-width: 1200px) {
+    .grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .header {
+    background: var(--surface); padding: 10px 16px 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 30;
+  }
+  .header-brand {
+    font-size: 18px; font-weight: 800; letter-spacing: -0.02em;
+    display: flex; align-items: center; gap: 0;
+  }
+  .header-brand .light { color: var(--text); }
+  .header-brand .prep {
+    background: linear-gradient(135deg, var(--miami1), var(--miami2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-style: italic;
+    font-weight: 900;
+    letter-spacing: -0.01em;
+  }
+  .header-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--surface2); display: flex; align-items: center;
+    justify-content: center; font-size: 14px; border: none; cursor: pointer;
+    color: var(--text2);
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .pf { padding: 16px; }
+  .logo-row { display: flex; gap: 16px; margin-bottom: 14px; }
+  .logo-box { flex: 1; text-align: center; }
+  .logo-box .lb { font-size: 9px; color: var(--text2); margin-bottom: 6px; font-weight: 600; letter-spacing: 0.02em; }
+  .logo-ph {
+    width: 72px; height: 72px; border-radius: 10px; border: 1.5px dashed var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: var(--text3); margin: 0 auto; cursor: pointer;
+    background: var(--surface2);
+  }
+  .fg { margin-bottom: 10px; }
+  .fl { font-size: 9px; font-weight: 600; color: var(--text2); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .fi {
+    width: 100%; padding: 9px 12px; border-radius: 8px;
+    border: 1px solid var(--border); font-size: 14px; font-weight: 500;
+    font-family: inherit; background: var(--surface2); color: var(--text);
+    outline: none;
+  }
+  .fi:focus { border-color: var(--accent); }
+  .fi::placeholder { color: var(--text3); }
+  .fr { display: flex; gap: 8px; }
+  .fr .fg { flex: 1; }
+
+  .cat-h {
+    background: var(--surface); padding: 6px 12px;
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 49px; z-index: 20;
+  }
+  .cs {
+    flex: 1; padding: 6px 10px; border-radius: 8px; border: none;
+    background: var(--surface2); font-size: 13px; font-weight: 500;
+    font-family: inherit; outline: none; min-width: 100px;
+    color: var(--text);
+  }
+  .cs::placeholder { color: var(--text3); }
+  .cat-seg {
+    display: flex; background: var(--surface2); border-radius: 7px; padding: 2px;
+    width: 100%; margin-top: 4px;
+  }
+  .cat-seg-btn {
+    flex: 1; text-align: center; padding: 4px 0; border-radius: 5px;
+    font-size: 10px; font-weight: 600; cursor: pointer; transition: all 0.12s;
+    color: var(--text2); border: none; background: transparent;
+  }
+  .cat-seg-btn.on { background: var(--accent); color: #000; box-shadow: 0 1px 4px rgba(0,212,170,0.3); }
+
+  .filter-strip {
+    padding: 5px 12px; background: var(--surface);
+    overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; border-bottom: 1px solid var(--border);
+    display: flex; gap: 3px;
+  }
+  .filter-strip::-webkit-scrollbar { display: none; }
+  .pill {
+    display: inline-block; padding: 3px 10px; border-radius: 12px;
+    font-size: 10px; font-weight: 500; cursor: pointer; transition: all 0.12s;
+    background: var(--surface2); color: var(--text2); white-space: nowrap;
+    font-family: inherit; border: none;
+  }
+  .pill.on { background: var(--miami1); color: #fff; }
+  .pill-all { background: var(--surface2); color: var(--text2); font-weight: 600; }
+  .pill-all.on { background: var(--text); color: var(--bg); }
+
+  .grid { padding: 6px 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  .card {
+    background: var(--surface); border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border); cursor: pointer; transition: all 0.08s;
+  }
+  .card:active { transform: scale(0.97); }
+  .card-img {
+    width: 100%; height: 72px; background: var(--surface2);
+    display: flex; align-items: center; justify-content: center; font-size: 24px;
+  }
+  .card-bd { padding: 5px 7px 6px; }
+  .card-n { font-size: 11px; font-weight: 600; line-height: 1.3; color: var(--text); }
+  .card-b { font-size: 9px; color: var(--text2); margin-top: 1px; }
+  .card-ts { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; }
+  .card-t {
+    font-size: 7px; padding: 1px 4px; border-radius: 2px;
+    background: var(--surface2); color: var(--text2); font-weight: 500;
+  }
+  .card-t.w { background: rgba(255,42,109,0.15); color: var(--miami1); }
+  .card-s { font-size: 8px; color: var(--text3); margin-top: 2px; line-height: 1.3; }
+  .card-ft {
+    padding: 3px 7px 6px; display: flex; align-items: center; gap: 4px;
+  }
+  .card-add {
+    font-size: 9px; font-weight: 600; color: #000;
+    background: var(--accent); border: none; padding: 3px 8px;
+    border-radius: 5px; cursor: pointer; font-family: inherit;
+  }
+  .card-add:active { opacity: 0.8; }
+  .card-l { margin-left: auto; display: flex; gap: 1px; }
+  .card-l span { font-size: 6px; padding: 1px 3px; border-radius: 2px; font-weight: 600; }
+  .card-l .pana { background: rgba(0,100,255,0.2); color: #5b9aff; }
+  .card-l .transpa { background: rgba(0,212,170,0.2); color: var(--accent); }
+  .card-l .accled { background: rgba(255,200,0,0.2); color: #ffd700; }
+  .card-l .rvz { background: rgba(119,0,255,0.2); color: #b366ff; }
+  .card-l .doppro { background: rgba(255,42,109,0.2); color: var(--miami1); }
+
+  .section-h {
+    grid-column: 1/-1; padding: 6px 2px 2px; margin-top: 4px;
+  }
+  .section-h .title {
+    font-size: 10px; font-weight: 700; color: var(--miami2);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .section-h .line { height: 1px; background: var(--border); margin-top: 3px; }
+
+  .ls {
+    padding: 10px 14px; background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .ls-row { display: flex; gap: 8px; }
+  .ls-stat { flex: 1; text-align: center; }
+  .ls-stat .n { font-size: 18px; font-weight: 700; color: var(--miami2); }
+  .ls-stat .l { font-size: 8px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 1px; }
+  .ls-sub {
+    margin-top: 6px; display: flex; gap: 4px; align-items: center; font-size: 11px; color: var(--text2);
+  }
+  .ls-sub select {
+    font-size: 11px; font-weight: 600; font-family: inherit;
+    border: none; background: transparent; color: var(--text); outline: none;
+    -webkit-appearance: none; padding-right: 14px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5' fill='%238888a0'/%3E%3C/svg%3E") no-repeat right center;
+  }
+
+  .li-container { padding: 4px 12px; }
+  .li-item {
+    background: var(--surface); border-radius: 8px;
+    padding: 8px 10px; margin-bottom: 5px;
+    display: flex; align-items: center; gap: 6px; border: 1px solid var(--border);
+  }
+  .li-qty { display: flex; align-items: center; gap: 0; flex-shrink: 0; }
+  .li-qty button {
+    width: 22px; height: 22px; border-radius: 5px; border: 1px solid var(--border);
+    background: var(--surface2); font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text); padding: 0; line-height: 1; font-family: inherit;
+  }
+  .li-qty button:active { background: var(--bg); }
+  .li-qty span { width: 22px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text); }
+  .li-info { flex: 1; min-width: 0; }
+  .li-n { font-size: 11px; font-weight: 500; color: var(--text); }
+  .li-d { font-size: 9px; color: var(--text2); }
+  .li-rm {
+    width: 22px; height: 22px; border: none; background: transparent;
+    font-size: 12px; color: var(--text3); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .li-rm:active { color: var(--miami1); }
+  .li-empty { padding: 30px 20px; text-align: center; color: var(--text3); font-size: 12px; }
+
+  .btm-cta {
+    padding: 10px 14px calc(10px + var(--safe-bottom));
+    background: var(--surface); border-top: 1px solid var(--border);
+    position: sticky; bottom: 0; display: flex; gap: 6px;
+  }
+  .btn {
+    padding: 10px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: inherit; border: none; text-align: center;
+    transition: all 0.12s;
+  }
+  .btn-p { background: var(--miami1); color: #fff; flex: 1; }
+  .btn-p:active { opacity: 0.85; }
+  .btn-s { background: var(--surface2); color: var(--text); flex: 1; }
+  .btn-s:active { opacity: 0.8; }
+
+  .l-page { padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .lc {
+    background: var(--surface); border-radius: 10px;
+    padding: 12px; display: flex; align-items: center; gap: 10px;
+    border: 1px solid var(--border); cursor: pointer;
+  }
+  .lc:active { background: var(--surface2); }
+  .lc-ic {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px;
+    background: var(--surface2);
+  }
+  .lc-info { flex: 1; }
+  .lc-n { font-size: 13px; font-weight: 600; color: var(--text); }
+  .lc-c { font-size: 10px; color: var(--text2); margin-top: 1px; }
+  .lc-chk {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--border); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #000; transition: all 0.12s;
+  }
+  .lc-chk.on { background: var(--accent); border-color: var(--accent); }
+
+  .date-h { padding: 14px 16px 6px; }
+  .date-h h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+  .date-list { padding: 6px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .date-card {
+    background: var(--surface); border-radius: 10px; padding: 12px;
+    border: 1px solid var(--border); display: flex; align-items: center; gap: 10px;
+  }
+  .date-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: rgba(0,212,170,0.1); display: flex; align-items: center;
+    justify-content: center; font-size: 16px;
+  }
+  .date-info { flex: 1; }
+  .date-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .date-range { font-size: 10px; color: var(--text2); }
+  .date-add {
+    border: 1px dashed var(--border); border-radius: 10px; padding: 12px;
+    text-align: center; font-size: 12px; color: var(--text2); cursor: pointer;
+    background: var(--surface);
+  }
+
+  .saved-h { padding: 14px 16px 6px; }
+  .saved-h h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+  .saved-grid { padding: 6px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .saved-card {
+    background: var(--surface); border-radius: 10px; padding: 12px;
+    border: 1px solid var(--border); cursor: pointer;
+  }
+  .saved-card:active { background: var(--surface2); }
+  .saved-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .saved-meta { font-size: 10px; color: var(--text2); margin-top: 2px; display: flex; gap: 8px; }
+
+  .sheet {
+    display: none; position: fixed; inset: 0; z-index: 50;
+    background: rgba(0,0,0,0.6);
+  }
+  .sheet.open { display: block; }
+  .sheet-c {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: var(--surface); border-radius: 16px 16px 0 0;
+    padding: 20px 20px 30px;
+  }
+  .sheet-handle {
+    width: 32px; height: 3px; border-radius: 2px; background: var(--border);
+    margin: 0 auto 16px;
+  }
+  .sheet-title { font-size: 15px; font-weight: 700; text-align: center; margin-bottom: 12px; color: var(--text); }
+  .sheet-qty {
+    display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 16px;
+  }
+  .sheet-qty button {
+    width: 44px; height: 44px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--surface2);
+    font-size: 20px; cursor: pointer; font-weight: 600; color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sheet-qty button:active { opacity: 0.8; }
+  .sheet-qty span {
+    font-size: 32px; font-weight: 700; width: 60px; text-align: center;
+    color: var(--miami2);
+  }
+  .sheet .btn-p { width: 100%; }
+
+  /* ═══ TAB BAR ─── */
+  .tab-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px;
+    background: rgba(21,21,31,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    display: flex; padding: 6px 0 calc(6px + var(--safe-bottom));
+    z-index: 100;
+  }
+  .tbi {
+    flex: 1; text-align: center; padding: 2px 0;
+    cursor: pointer; color: var(--text3); transition: all 0.1s; position: relative;
+  }
+  .tbi.active { color: var(--miami2); }
+  .tbi .ic { font-size: 20px; display: block; line-height: 1.2; }
+  .tbi .lb {
+    font-size: 9px; font-weight: 600; margin-top: 0;
+    letter-spacing: 0.02em; display: block;
+  }
+  .tbi .badge {
+    position: absolute; top: -2px; right: 50%; margin-right: -18px;
+    background: var(--miami1); color: #fff; font-size: 7px; padding: 1px 5px;
+    border-radius: 7px; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand"><span class="light">LIGHT</span><span class="prep">PREP</span></div>
+  <div style="display:flex;gap:4px;">
+    <button class="header-icon">💾</button>
+    <button class="header-icon">⚙️</button>
+  </div>
+</div>
+
+<!-- PROJET -->
+<div class="view active" id="v-projet">
+  <div class="pf">
+    <div class="logo-row">
+      <div class="logo-box"><div class="lb">Logo production</div><div class="logo-ph">+</div></div>
+      <div class="logo-box"><div class="lb">Logo loueur</div><div class="logo-ph">+</div></div>
+    </div>
+    <div class="fg"><div class="fl">Projet</div><input class="fi" value="LE GRAND SAUT" id="projName"></div>
+    <div class="fr">
+      <div class="fg"><div class="fl">Production</div><input class="fi" value="M6 / SND FICTION" id="prodName"></div>
+      <div class="fg"><div class="fl">Réalisateur</div><input class="fi" placeholder="Nom" id="realName"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><div class="fl">Dp</div><input class="fi" value="Tarik Rebeihi" id="dpName"></div>
+      <div class="fg"><div class="fl">Chef élec</div><input class="fi" placeholder="Nom" id="chefName"></div>
+    </div>
+  </div>
+  <div class="date-h"><h2>Périodes de tournage</h2></div>
+  <div class="date-list" id="dateList"></div>
+</div>
+
+<!-- CATALOGUE -->
+<div class="view" id="v-catalog">
+  <div class="cat-h">
+    <input class="cs" placeholder="🔍 Rechercher…">
+    <div class="cat-seg">
+      <button class="cat-seg-btn on" onclick="setCatMode('projo',this)">💡 Projecteurs</button>
+      <button class="cat-seg-btn" onclick="setCatMode('grip',this)">🔧 Accessoires</button>
+    </div>
+  </div>
+  <div class="filter-strip" id="typePills">
+    <span class="pill pill-all on">Tout</span>
+    <span class="pill">Led Fresnel</span>
+    <span class="pill">Led Panel</span>
+    <span class="pill">Led Soft</span>
+    <span class="pill">Hmi</span>
+    <span class="pill">Tungsten</span>
+  </div>
+  <div class="filter-strip" id="brandPills">
+    <span class="pill pill-all on">Toutes marques</span>
+    <span class="pill">Arri</span>
+    <span class="pill">Aputure</span>
+    <span class="pill">Nanlux</span>
+    <span class="pill">Kino Flo</span>
+    <span class="pill">Creamsource</span>
+  </div>
+  <div class="grid" id="prodGrid"></div>
+</div>
+
+<!-- LISTE -->
+<div class="view" id="v-list">
+  <div class="ls">
+    <div class="ls-row">
+      <div class="ls-stat"><div class="n" id="lCount">0</div><div class="l">Équipements</div></div>
+      <div class="ls-stat"><div class="n" id="lPower">0</div><div class="l">Watts</div></div>
+      <div class="ls-stat"><div class="n" id="lWeight">0</div><div class="l">Poids (kg)</div></div>
+    </div>
+    <div class="ls-sub">
+      <span>Liste :</span>
+      <select id="listSelector">
+        <option value="principale">Principale</option>
+        <option value="prep">Prépa</option>
+        <option value="complement">Complément</option>
+      </select>
+    </div>
+  </div>
+  <div class="li-container" id="listContainer"><div class="li-empty" id="listEmpty"><div style="font-size:32px;">📋</div><p style="margin-top:4px;">Ajoute des équipements<br>depuis le catalogue</p></div></div>
+  <div class="btm-cta">
+    <button class="btn btn-s">💾 Sauvegarder</button>
+    <button class="btn btn-p" id="pdfBtn" disabled>📄 Pdf projet</button>
+  </div>
+</div>
+
+<!-- SAUVEGARDES -->
+<div class="view" id="v-saved">
+  <div class="saved-h"><h2>Listes sauvegardées</h2></div>
+  <div class="saved-grid" id="savedGrid"><div class="li-empty" style="padding:20px;color:var(--text3);">Aucune liste sauvegardée</div></div>
+</div>
+
+<!-- LOUERS -->
+<div class="view" id="v-loueurs">
+  <div style="padding:14px 16px 6px;"><h2 style="font-size:16px;font-weight:700;letter-spacing:-0.02em;color:var(--text);">Loueurs partenaires</h2></div>
+  <div class="l-page">
+    <div class="lc" onclick="togL(this)">
+      <div class="lc-ic">🎥</div>
+      <div class="lc-info"><div class="lc-n">Panavision</div><div class="lc-c">416 projecteurs</div></div>
+      <div class="lc-chk on">✓</div>
+    </div>
+    <div class="lc" onclick="togL(this)">
+      <div class="lc-ic">🔦</div>
+      <div class="lc-info"><div class="lc-n">Transpalux</div><div class="lc-c">101 projecteurs</div></div>
+      <div class="lc-chk"> </div>
+    </div>
+    <div class="lc" onclick="togL(this)">
+      <div class="lc-ic">⚡</div>
+      <div class="lc-info"><div class="lc-n">Acc&amp;Led</div><div class="lc-c">240 projecteurs</div></div>
+      <div class="lc-chk"> </div>
+    </div>
+    <div class="lc" onclick="togL(this)">
+      <div class="lc-ic">🏗️</div>
+      <div class="lc-info"><div class="lc-n">Rvz</div><div class="lc-c">290 projecteurs</div></div>
+      <div class="lc-chk"> </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <div class="tbi active" onclick="showV('projet',this)"><span class="ic">📋</span><span class="lb">Projet</span></div>
+  <div class="tbi" onclick="showV('catalog',this)"><span class="ic">💡</span><span class="lb">Catalogue</span></div>
+  <div class="tbi" onclick="showV('list',this)"><span class="ic">📝</span><span class="lb">Liste</span><span class="badge" id="tabBadge">0</span></div>
+  <div class="tbi" onclick="showV('saved',this)"><span class="ic">💾</span><span class="lb">Sauvegardes</span></div>
+  <div class="tbi" onclick="showV('loueurs',this)"><span class="ic">🏢</span><span class="lb">Loueurs</span></div>
+</div>
+
+<!-- QTY SHEET -->
+<div class="sheet" id="qtySheet">
+  <div class="sheet-c">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="qtyTitle">Ajouter</div>
+    <div class="sheet-qty"><button onclick="chgQty(-2)">−</button><span id="qtyValue">1</span><button onclick="chgQty(2)">+</button></div>
+    <button class="btn btn-p" onclick="confirmQty()">Ajouter à la liste</button>
+    <button class="btn btn-s" style="width:100%;margin-top:6px;" onclick="closeQty()">Annuler</button>
+  </div>
+</div>
+
+<script>
+// ─── DATA (simplifié pour la maquette) ───
+const PRODS = [
+  { n:"Skypanel S60-C", b:"Arri", t:"Led Panel", s:"2800-10000k · Cri >95", w:420 },
+  { n:"Allegra 4:2", b:"Panalux", t:"Led Soft", s:"2700-6500k · Cri 93.7", w:195 },
+  { n:"Vortex8", b:"Creamsource", t:"Led Soft", s:"2200-15000k · Cri 95", w:650 },
+  { n:"Ls 600c Pro", b:"Aputure", t:"Led Fresnel", s:"2700-6500k · Cri 96", w:600 },
+  { n:"Forza 720B", b:"Nanlux", t:"Led Fresnel", s:"2700-6500k · Cri 96", w:720 },
+  { n:"Orbiter", b:"Arri", t:"Led Fresnel", s:"2000-20000k · Cri >98", w:400 },
+  { n:"Nova P600c", b:"Aputure", t:"Led Panel", s:"2700-6500k · Cri 95", w:600 },
+  { n:"Gemini 1x1", b:"Litepanels", t:"Led Panel", s:"2700-10000k · Cri 95", w:200 },
+  { n:"Celeb 850", b:"Kino Flo", t:"Led Panel", s:"2500-9900k · Cri >95", w:200 },
+  { n:"L7-C Plus", b:"Arri", t:"Led Fresnel", s:"2800-10000k · Cri >95", w:220 },
+  { n:"Pluto Fresnel", b:"Astera", t:"Led Fresnel", s:"2700-6500k · Cri >96", w:80 },
+  { n:"Ls 1200d Pro", b:"Aputure", t:"Led Fresnel", s:"5600k · Cri 96", w:1200 },
+  { n:"Skypanel X23", b:"Arri", t:"Led Panel", s:"2000-20000k · Cri >95", w:2400 },
+  { n:"Hmi 18Kw", b:"Arri", t:"Hmi Fresnel", s:"18000w · 5600k", w:18000 },
+];
+const LC = { Pana:"pana", Transpa:"transpa", "ACC&LED":"accled", RVZ:"rvz", Doppro:"doppro" };
+let lists = { principale: [], prep: [], complement: [] };
+let currentList = "principale";
+let catMode = "projo";
+
+// ─── RENDER ───
+function renderProds() {
+  const grid = document.getElementById("prodGrid");
+  if (catMode === "projo") {
+    grid.innerHTML = PRODS.map((p,i) => `<div class="card"><div class="card-img">💡</div><div class="card-bd"><div class="card-n">${p.n}</div><div class="card-b">${p.b}</div><div class="card-ts"><span class="card-t">${p.t}</span><span class="card-t w">${p.w}w</span></div><div class="card-s">${p.s}</div></div><div class="card-ft"><button class="card-add" data-i="${i}">+ Ajouter</button></div></div>`).join("");
+  } else {
+    const gripData = [
+      {cat:"Pieds — Rotules — Déports", items:[{n:"Crank-O-Vator 3.80m",s:"H: 3.80m · 50kg"},{n:"Wind-Up 4m",s:"H: 4m · 100kg"},{n:"Low-Boy Acier",s:"H: 1m · 90kg"},{n:"U126 Cine Acier",s:"H: 3.60m · 85kg"},{n:"Combo 3 Lift",s:"3 sections · 3m"},{n:"Rotule Standard",s:"16/28mm · 20kg"},{n:"Magic Arm",s:"3.3lb"},{n:"Super Clamp",s:"5cm · 100kg"},{n:"Déport 1m",s:"Avec rotule"}]},
+      {cat:"Drapeaux — Floppy — Mamas", items:[{n:"Flag 24×36",s:"60×90cm · Noir"},{n:"Flag 18×24",s:"45×60cm"},{n:"Floppy 72×24",s:"180×60cm"},{n:"Mama Grande",s:"Grand bras"},{n:"Mama Moyenne",s:"Bras moyen"}]},
+      {cat:"Cadres", items:[{n:"Cadre 12×12m",s:"Aluminium"},{n:"Cadre 8×8m",s:"Aluminium"},{n:"Cadre 4×4m",s:"Aluminium"},{n:"Cadre 2×2m",s:"Aluminium"},{n:"Ally 8×4ft",s:"2.4×1.2m"}]},
+      {cat:"Toiles — Ultra Bounce — Grid", items:[{n:"Ultra Bounce 12×12",s:"Réflexion diffuse"},{n:"Silk 12×12 Pleine",s:"Pleine soie"},{n:"Silk 12×12 1/2",s:"Demi-soie"},{n:"Grid Cloth Full 12×12",s:"Pleine grille"},{n:"Grid Cloth 1/2 12×12",s:"Demi-grille"},{n:"Blackout 12×12",s:"Occultation"},{n:"Silver Lame 12×12",s:"Argenté"}]},
+      {cat:"Louvres & Contrôle", items:[{n:"Porte-Gel 4×4",s:"Universel"},{n:"Porte-Gel 6×6",s:"Universel"},{n:"Barndoors 4 Feuilles",s:"1Kw-2Kw"},{n:"Snoot 1Kw",s:"Cône"},{n:"Eggcrate 1×1",s:"Nid d'abeille"},{n:"Scrimset 1Kw",s:"Jeu"}]},
+      {cat:"Doppro — AirTube", items:[{n:"Airtube Classic",s:"Tube gonflable"},{n:"Airtube Switch",s:"Avec switch"},{n:"Airtube Switch Xl",s:"Version XL"},{n:"Airbounce 1×1",s:"Réflecteur"},{n:"Airdome",s:"Dôme"},{n:"Astera Eggcrate",s:"Nid d'abeille"}]},
+    ];
+    let html = "", gi = 0;
+    for (const sec of gripData) {
+      html += `<div class="section-h"><div class="title">${sec.cat}</div><div class="line"></div></div>`;
+      for (const item of sec.items) {
+        html += `<div class="card"><div class="card-img">🔧</div><div class="card-bd"><div class="card-n" style="font-size:10px;">${item.n}</div><div class="card-s" style="font-size:8px;">${item.s || ""}</div></div><div class="card-ft"><button class="card-add" data-i="${gi++}" data-g="1">+ Ajouter</button></div></div>`;
+      }
+    }
+    window._gripF = gripData.flatMap(s=>s.items);
+    grid.innerHTML = html;
+  }
+  document.querySelectorAll(".card-add").forEach(b => b.addEventListener("click", function() {
+    const idx = +this.dataset.i;
+    const isG = this.dataset.g === "1";
+    window._pending = isG ? window._gripF[idx] : PRODS[idx];
+    if (window._pending) { document.getElementById("qtyTitle").textContent = window._pending.n; document.getElementById("qtyValue").textContent = "1"; document.getElementById("qtySheet").classList.add("open"); }
+  }));
+}
+
+function upd() {
+  const items = lists[currentList];
+  const n = items.reduce((s,i)=>s+i.q,0);
+  document.getElementById("tabBadge").textContent = n;
+  document.getElementById("lCount").textContent = n;
+  document.getElementById("lPower").textContent = items.reduce((s,i)=>s+(i.w||0)*i.q,0) > 1000 ? (items.reduce((s,i)=>s+(i.w||0)*i.q,0)/1000).toFixed(1)+"K" : items.reduce((s,i)=>s+(i.w||0)*i.q,0);
+  document.getElementById("lWeight").textContent = items.reduce((s,i)=>s+(i.kg||0)*i.q,0).toFixed(1);
+  if (n === 0) { document.getElementById("listContainer").innerHTML = '<div class="li-empty"><div style="font-size:32px;">📋</div><p style="margin-top:4px;">Ajoute des équipements<br>depuis le catalogue</p></div>'; document.getElementById("pdfBtn").disabled = true; return; }
+  document.getElementById("pdfBtn").disabled = false;
+  document.getElementById("listContainer").innerHTML = items.map((item,i) => `<div class="li-item"><div class="li-qty"><button onclick="cq(${i},-1)">−</button><span>${item.q}</span><button onclick="cq(${i},1)">+</button></div><div class="li-info"><div class="li-n">${item.n}</div><div class="li-d">${item.b||""} ${item.w?"· "+item.w+"w":""}</div></div><button class="li-rm" onclick="rm(${i})">✕</button></div>`).join("");
+}
+function cq(i,d) { if (lists[currentList][i]) { lists[currentList][i].q = Math.max(1, lists[currentList][i].q + d); upd(); } }
+function rm(i) { lists[currentList].splice(i,1); upd(); }
+function chgQty(d) { let v = parseInt(document.getElementById("qtyValue").textContent) + d; if (v<1) v=1; if (v>99) v=99; document.getElementById("qtyValue").textContent = v; }
+function confirmQty() {
+  const q = parseInt(document.getElementById("qtyValue").textContent);
+  const p = window._pending; if (!p) return;
+  const ex = lists[currentList].find(x=>x.n===p.n);
+  if (ex) ex.q += q; else lists[currentList].push({n:p.n,b:p.b||"",w:p.w||0,kg:p.kg||0,q});
+  closeQty(); upd();
+}
+function closeQty() { document.getElementById("qtySheet").classList.remove("open"); window._pending = null; }
+
+function showV(id, el) {
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  document.getElementById("v-"+id).classList.add("active");
+  document.querySelectorAll(".tbi").forEach(t=>t.classList.remove("active"));
+  if (el) el.classList.add("active");
+}
+function setCatMode(m,btn) {
+  catMode = m;
+  document.querySelectorAll(".cat-seg-btn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  document.getElementById("typePills").style.display = m==="projo"?"flex":"none";
+  document.getElementById("brandPills").style.display = m==="projo"?"flex":"none";
+  renderProds();
+}
+function togL(el) { el.querySelector(".lc-chk").classList.toggle("on"); }
+
+renderProds();
+upd();
+</script>
+</body>
+</html>
