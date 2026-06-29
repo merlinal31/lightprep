@@ -594,11 +594,39 @@ function addDate() {
 }
 
 
-// ─── RENDER ───
+// ─── RENDER (real Airtable data) ───
+const _CACHE = { projos: [], grip: [], loaded: false };
+async function loadAPIData() {
+  try {
+    const [p, g] = await Promise.all([
+      fetch('/api/projectors').then(r=>r.json()),
+      fetch('/api/grip').then(r=>r.json())
+    ]);
+    _CACHE.projos = (p.records||[]).map(r => ({
+      n: r.fields.Projecteur || r.fields.Nom || "?",
+      b: r.fields.Marque || r.fields.Fabricant || "",
+      t: r.fields["Type (complet)"] || r.fields.Type || "",
+      s: r.fields.Caractéristiques || "",
+      w: parseInt(r.fields["Consommation (W)"]) || 0
+    }));
+    _CACHE.grip = (g.records||[]).map(r => ({
+      n: r.fields.Projecteur || r.fields.Nom || "?",
+      s: r.fields.Caractéristiques || "",
+      t: r.fields.Type || ""
+    }));
+    _CACHE.loaded = true;
+    console.log(`✅ Loaded ${_CACHE.projos.length} projectors + ${_CACHE.grip.length} grip`);
+    renderProds();
+  } catch(e) { console.log('API unavailable, using fallback'); }
+}
+
 function renderProds() {
   const grid = document.getElementById("prodGrid");
+  const data = _CACHE.loaded ? _CACHE.projos : PRODS;
+  
   if (catMode === "projo") {
-    grid.innerHTML = PRODS.map((p,i) => `<div class="card"><div class="card-img">💡</div><div class="card-bd"><div class="card-n">${p.n}</div><div class="card-b">${p.b}</div><div class="card-ts"><span class="card-t">${p.t}</span><span class="card-t w">${p.w}w</span></div><div class="card-s">${p.s}</div></div><div class="card-ft"><button class="card-add" data-i="${i}">+ Ajouter</button></div></div>`).join("");
+    if (!_CACHE.loaded && data.length === PRODS.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);"><div style="font-size:30px;margin-bottom:8px;">⏳</div><p>Chargement des projecteurs...</p></div>'; return; }
+    grid.innerHTML = data.map((p,i) => `<div class="card"><div class="card-img">💡</div><div class="card-bd"><div class="card-n">${p.n}</div><div class="card-b">${p.b}</div><div class="card-ts"><span class="card-t">${p.t}</span>${p.w ? `<span class="card-t w">${p.w}w</span>` : ""}</div><div class="card-s">${(p.s||"").slice(0,60)}</div></div><div class="card-ft"><button class="card-add" data-i="${i}">+ Ajouter</button></div></div>`).join("");
   } else {
     const gripData = [
       {cat:"Pieds — Rotules — Déports", items:[{n:"Crank-O-Vator 3.80m",s:"H: 3.80m · 50kg"},{n:"Wind-Up 4m",s:"H: 4m · 100kg"},{n:"Low-Boy Acier",s:"H: 1m · 90kg"},{n:"U126 Cine Acier",s:"H: 3.60m · 85kg"},{n:"Combo 3 Lift",s:"3 sections · 3m"},{n:"Rotule Standard",s:"16/28mm · 20kg"},{n:"Magic Arm",s:"3.3lb"},{n:"Super Clamp",s:"5cm · 100kg"},{n:"Déport 1m",s:"Avec rotule"}]},
@@ -714,6 +742,7 @@ document.querySelectorAll(".pill").forEach(p => {
     }
   });
 });
+loadAPIData();
 renderProds();
 renderDates();
 upd();
