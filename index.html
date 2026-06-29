@@ -584,15 +584,49 @@ let shootDates = [
   { id:"d3", name:"Complément", start:"", end:"" },
 ];
 
+
 function renderDates() {
-  const el = document.getElementById("dateList");
+  var el = document.getElementById("dateList");
   if (!el) return;
-  let html = "";
-  for (let d of shootDates) {
-    html += "<div class="date-card"><div class="date-icon">&#128197;</div><div class="date-info"><div class="date-name">" + d.name + "</div><div class="date-range"><input type="date" value="" + d.start + "" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;" onchange="shootDates.find(x=>x.id===\"" + d.id + "\").start=this.value"> &#8594; <input type="date" value="" + d.end + "" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;" onchange="shootDates.find(x=>x.id===\"" + d.id + "\").end=this.value"></div></div><button style="background:none;border:none;color:var(--miami1);font-size:16px;cursor:pointer;" onclick="shootDates=shootDates.filter(x=>x.id!==\"" + d.id + "\");renderDates()">&#10005;</button></div>";
+  el.innerHTML = "";
+  for (var i = 0; i < shootDates.length; i++) {
+    var d = shootDates[i];
+    var card = document.createElement("div");
+    card.className = "date-card";
+    card.innerHTML = 
+      "<div class="date-icon">&#128197;</div>" +
+      "<div class="date-info">" +
+        "<div class="date-name">" + d.name + "</div>" +
+        "<div class="date-range">" +
+          "<input type="date" value="" + d.start + "" class="date-inp" data-id="" + d.id + "" data-field="start">" +
+          " &rarr; " +
+          "<input type="date" value="" + d.end + "" class="date-inp" data-id="" + d.id + "" data-field="end">" +
+        "</div>" +
+      "</div>" +
+      "<button class="date-del" data-id="" + d.id + "">&#10005;</button>";
+    el.appendChild(card);
   }
-  html += "<div class="date-add" onclick="addDate()">+ Ajouter une periode</div>";
-  el.innerHTML = html;
+  var add = document.createElement("div");
+  add.className = "date-add";
+  add.textContent = "+ Ajouter une période";
+  add.onclick = function(){ addDate(); renderDates(); };
+  el.appendChild(add);
+  
+  // Date change handlers
+  el.querySelectorAll(".date-inp").forEach(function(inp) {
+    inp.onchange = function() {
+      var date = shootDates.find(function(x) { return x.id === this.dataset.id; }.bind(this));
+      if (date) date[this.dataset.field] = this.value;
+    };
+  });
+  
+  // Delete handlers  
+  el.querySelectorAll(".date-del").forEach(function(btn) {
+    btn.onclick = function() {
+      shootDates = shootDates.filter(function(x) { return x.id !== this.dataset.id; }.bind(this));
+      renderDates();
+    };
+  });
 }
 function addDate() {
   const name = prompt("Nom de la période :");
