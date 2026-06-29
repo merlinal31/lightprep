@@ -596,7 +596,7 @@ loadData();
   <div class="sheet-c">
     <div class="sheet-handle"></div>
     <div class="sheet-title" id="qtyTitle">Ajouter</div>
-    <div class="sheet-qty"><button onclick="chgQty(-2)">−</button><span id="qtyValue">1</span><button onclick="chgQty(2)">+</button></div>
+    <div class="sheet-qty"><button onclick="chgQty(-1)">−</button><span id="qtyValue">1</span><button onclick="chgQty(1)">+</button></div>
     <button class="btn btn-p" onclick="confirmQty()">Ajouter à la liste</button>
     <button class="btn btn-s" style="width:100%;margin-top:6px;" onclick="closeQty()">Annuler</button>
   </div>
@@ -927,45 +927,30 @@ function saveProject() {
 
 // ─── ADD FROM DETAIL (opens qty sheet) ───
 
-function addFromDetail(name) {
-  console.log("addFromDetail called with:", name);
-  try {
-    var data = [];
-    if (typeof _CACHE !== "undefined" && _CACHE.loaded && _CACHE.projos.length > 0) {
-      data = _CACHE.projos;
-    } else {
-      data = PRODS;
-    }
-    console.log("Searching in", data.length, "items");
-    
-    var p = null;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].n === name) { p = data[i]; break; }
-    }
-    
-    if (!p) {
-      var grip = window._gripF || [];
-      for (var i = 0; i < grip.length; i++) {
-        if (grip[i].n === name) { p = grip[i]; break; }
-      }
-    }
-    
-    if (!p) { console.log("Product not found:", name); return; }
-    console.log("Found:", p.n);
-    
-    window._pending = p;
-    var qtyS = document.getElementById("qtySheet");
-    var qtyT = document.getElementById("qtyTitle");
-    var qtyV = document.getElementById("qtyValue");
-    if (!qtyS || !qtyT || !qtyV) { console.log("qty elements missing"); return; }
-    
-    qtyT.textContent = p.n;
-    qtyV.textContent = "1";
-    qtyS.classList.add("open");
-    console.log("Sheet opened");
-  } catch(e) { console.log("Error:", e); }
-}
 
+function addFromDetail(name) {
+  try {
+    var data = (typeof _CACHE !== "undefined" && _CACHE.loaded && _CACHE.projos.length > 0) ? _CACHE.projos : (typeof PRODS !== "undefined" ? PRODS : []);
+    var p = null;
+    for (var si = 0; si < data.length; si++) {
+      if (data[si].n === name) { p = data[si]; break; }
+    }
+    if (!p) { alert("Produit non trouve: " + name); return; }
+    
+    var items = lists[currentList];
+    var ex = null;
+    for (var si = 0; si < items.length; si++) {
+      if (items[si].n === p.n) { ex = items[si]; break; }
+    }
+    if (ex) { ex.q++; } else { items.push({ n: p.n, b: p.b||"", w: p.w||0, kg: p.kg||0, q: 1 }); }
+    upd();
+    closeDetail();
+    // Visual feedback
+    var b = document.getElementById("tabBadge");
+    if (b) b.style.transform = "scale(1.5)";
+    setTimeout(function(){ if(b) b.style.transform = ""; }, 300);
+  } catch(e) { alert("Erreur: " + e.message); }
+}
 function addItemToList(name) {
   try {
     var data = (typeof _CACHE !== "undefined" && _CACHE.loaded && _CACHE.projos.length > 0) ? _CACHE.projos : PRODS;
