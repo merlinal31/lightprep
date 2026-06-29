@@ -868,8 +868,8 @@ function setCatMode(m,btn) {
   catMode = m;
   document.querySelectorAll(".cat-seg-btn").forEach(b=>b.classList.remove("on"));
   btn.classList.add("on");
-  document.getElementById("typePills").style.display = m==="projo"?"flex":"none";
-  document.getElementById("brandPills").style.display = m==="projo"?"flex":"none";
+  var tp = document.getElementById("typePills"); if (tp) tp.style.display = m==="projo"?"flex":"none";
+  var bp = document.getElementById("brandPills") || document.getElementById("brandFilter"); if (bp) bp.style.display = m==="projo"?"flex":"none"; else { var bs = document.getElementById("brandSelect"); if (bs) bs.style.display = m==="projo"?"":"none"; }
   renderProds();
 }
 function togL(el) { el.querySelector(".lc-chk").classList.toggle("on"); }
