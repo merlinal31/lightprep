@@ -535,11 +535,11 @@ loadData();
 
 <!-- TAB BAR -->
 <div class="tab-bar" id="tabBar">
-  <div data-view="projet" class="tbi active"><span class="ic">📋</span><span class="lb">Projet</span></div>
-  <div data-view="catalog" class="tbi"><span class="ic">💡</span><span class="lb">Catalogue</span></div>
-  <div data-view="list" class="tbi"><span class="ic">📝</span><span class="lb">Liste</span><span class="badge" id="tabBadge">0</span></div>
-  <div data-view="saved" class="tbi"><span class="ic">💾</span><span class="lb">Sauvegardes</span></div>
-  <div data-view="loueurs" class="tbi"><span class="ic">🏢</span><span class="lb">Loueurs</span></div>
+  <div class="tbi active" onclick="showV('projet',this)"><span class="ic">📋</span><span class="lb">Projet</span></div>
+  <div class="tbi" onclick="showV('catalog',this)"><span class="ic">💡</span><span class="lb">Catalogue</span></div>
+  <div class="tbi" onclick="showV('list',this)"><span class="ic">📝</span><span class="lb">Liste</span><span class="badge" id="tabBadge">0</span></div>
+  <div class="tbi" onclick="showV('saved',this)"><span class="ic">💾</span><span class="lb">Sauvegardes</span></div>
+  <div class="tbi" onclick="showV('loueurs',this)"><span class="ic">🏢</span><span class="lb">Loueurs</span></div>
 </div>
 
 <!-- QTY SHEET -->
@@ -816,19 +816,6 @@ loadAPIData();
 renderProds();
 renderDates();
 upd();
-
-// Tab navigation via event delegation
-document.getElementById("tabBar").addEventListener("click", function(e) {
-  var target = e.target.closest("[data-view]");
-  if (!target) return;
-  var view = target.dataset.view;
-  if (!view) return;
-  document.querySelectorAll(".view").forEach(function(v) { v.classList.remove("active"); });
-  var el = document.getElementById("v-" + view);
-  if (el) el.classList.add("active");
-  document.querySelectorAll(".tbi").forEach(function(t) { t.classList.remove("active"); });
-  target.classList.add("active");
-});
 
 </script>
 </body>
