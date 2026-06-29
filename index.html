@@ -1155,6 +1155,41 @@ function filterCatalog() {
     card.style.display = show ? "" : "none";
   }
 }
+function upd() {
+  try {
+    var items = (typeof lists !== "undefined" && lists[currentList]) ? lists[currentList] : [];
+    var n = 0, pw = 0, kg = 0;
+    for (var si = 0; si < items.length; si++) {
+      n += items[si].q;
+      pw += (items[si].w || 0) * items[si].q;
+      kg += (items[si].kg || 0) * items[si].q;
+    }
+    var tb = document.getElementById("tabBadge");
+    if (tb) tb.textContent = n;
+    var lc = document.getElementById("lCount");
+    if (lc) lc.textContent = n;
+    var lp = document.getElementById("lPower");
+    if (lp) lp.textContent = pw > 1000 ? (pw/1000).toFixed(1)+"K" : pw;
+    var lw = document.getElementById("lWeight");
+    if (lw) lw.textContent = kg.toFixed(1);
+    var c = document.getElementById("listContainer");
+    if (!c) return;
+    if (n === 0) {
+      c.innerHTML = '<div class="li-empty"><div style="font-size:32px;">&#128203;</div><p style="margin-top:4px;">Ajoute des equipements<br>depuis le catalogue</p></div>';
+      return;
+    }
+    var html = "";
+    for (var si = 0; si < items.length; si++) {
+      var item = items[si];
+      html += '<div class="li-item"><div class="li-qty"><button onclick="cq(' + si + ',-1)">−</button><span>' + item.q + '</span><button onclick="cq(' + si + ',1)">+</button></div>' +
+        '<div class="li-info"><div class="li-n">' + item.n + '</div>' +
+        '<div class="li-d">' + (item.b||"") + (item.w ? " \u00b7 " + item.w + "W" : "") + '</div></div>' +
+        '<button class="li-rm" onclick="rm(' + si + ')">&#10005;</button></div>';
+    }
+    c.innerHTML = html;
+  } catch(e) { console.log("upd error:", e); }
+}
+
 loadAPIData();
 renderProds();
 renderDates();
