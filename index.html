@@ -879,6 +879,39 @@ function saveProject() {
   try { localStorage.setItem('lightprep_project', JSON.stringify(data)); } catch(e) {}
   alert('Projet sauvegardé !');
 }
+
+// ─── FILTER CATALOG ───
+function filterCatalog() {
+  var q = (document.getElementById("searchInput").value || "").toLowerCase();
+  var brand = document.getElementById("brandSelect").value || "";
+  var activeTypes = [];
+  var typePills = document.querySelectorAll("#typePills .pill:not(.pill-all)");
+  for (var p = 0; p < typePills.length; p++) {
+    if (typePills[p].classList.contains("on")) {
+      activeTypes.push(typePills[p].textContent.toLowerCase().trim());
+    }
+  }
+  
+  var cards = document.querySelectorAll("#prodGrid .card");
+  for (var c = 0; c < cards.length; c++) {
+    var card = cards[c];
+    var text = card.textContent.toLowerCase();
+    var show = true;
+    
+    if (q && text.indexOf(q) < 0) show = false;
+    if (brand && text.indexOf(brand.toLowerCase()) < 0) show = false;
+    
+    if (show && activeTypes.length > 0) {
+      var matchesType = false;
+      for (var t = 0; t < activeTypes.length; t++) {
+        if (text.indexOf(activeTypes[t]) >= 0) { matchesType = true; break; }
+      }
+      if (!matchesType) show = false;
+    }
+    
+    card.style.display = show ? "" : "none";
+  }
+}
 // Make filter pills functional
 // Filter handlers now in filterCatalog()
 loadAPIData();
