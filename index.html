@@ -607,6 +607,39 @@ const PRODS = [
   { n:"Hmi 18Kw", b:"Arri", t:"Hmi Fresnel", s:"18000w · 5600k", w:18000 },
 ];
 const LC = { Pana:"pana", Transpa:"transpa", "ACC&LED":"accled", RVZ:"rvz", Doppro:"doppro" };
+// ─── API DATA LOADING ───
+const _CACHE = { projos: [], grip: [], loaded: false };
+async function loadAPIData() {
+  try {
+    const pResp = await fetch("/api/projectors");
+    const gResp = await fetch("/api/grip");
+    const pData = await pResp.json();
+    const gData = await gResp.json();
+    _CACHE.projos = (pData.records || []).map(function(r) {
+      return {
+        n: r.fields.Projecteur || r.fields.Nom || "?",
+        b: r.fields.Marque || r.fields.Fabricant || "",
+        t: r.fields["Type (complet)"] || r.fields.Type || "",
+        s: r.fields.Caracteristiques || "",
+        w: parseInt(r.fields["Consommation (W)"]) || 0
+      };
+    });
+    _CACHE.grip = (gData.records || []).map(function(r) {
+      return {
+        n: r.fields.Projecteur || r.fields.Nom || "?",
+        s: r.fields.Caracteristiques || "",
+        t: r.fields.Type || ""
+      };
+    });
+    _CACHE.loaded = true;
+    console.log("Loaded " + _CACHE.projos.length + " projectors");
+    renderProds();
+  } catch(e) {
+    console.log("API unavailable, using mock data");
+  }
+}
+
+
 let lists = { principale: [], prep: [], complement: [] };
 let currentList = "principale";
 let catMode = "projo";
