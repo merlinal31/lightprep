@@ -855,6 +855,33 @@ function renderProds() {
     upd();
     console.log("Added", q, "x", p.n);
 }
+
+function confirmQty() {
+  try {
+    var q = parseInt(document.getElementById("qtyValue").textContent) || 1;
+    var p = window._pending;
+    if (!p) return;
+    var items = lists[currentList];
+    var found = false;
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].n === p.n) { items[i].q += q; found = true; break; }
+    }
+    if (!found) { items.push({ n: p.n, b: p.b||"", w: p.w||0, kg: p.kg||0, q: q }); }
+    closeQty();
+    upd();
+  } catch(e) {}
+}
+
+function chgQty(d) {
+  try {
+    var v = parseInt(document.getElementById("qtyValue").textContent) || 1;
+    v = v + d;
+    if (v < 1) v = 1;
+    if (v > 99) v = 99;
+    document.getElementById("qtyValue").textContent = v;
+  } catch(e) {}
+}
+
 function closeQty() { document.getElementById("qtySheet").classList.remove("open"); window._pending = null; }
 
 function showV(id, el) {
