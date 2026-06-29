@@ -585,93 +585,61 @@ let shootDates = [
 ];
 
 
+
 function renderDates() {
   var el = document.getElementById("dateList");
   if (!el) return;
-  el.innerHTML = "";
+  var html = "";
   for (var i = 0; i < shootDates.length; i++) {
     var d = shootDates[i];
-    var card = document.createElement("div");
-    card.className = "date-card";
-    card.innerHTML = 
-      "<div class="date-icon">&#128197;</div>" +
-      "<div class="date-info">" +
-        "<div class="date-name">" + d.name + "</div>" +
-        "<div class="date-range">" +
-          "<input type="date" value="" + d.start + "" class="date-inp" data-id="" + d.id + "" data-field="start">" +
+    html += "<div class=\"date-card\">" +
+      "<div class=\"date-icon\">&#128197;</div>" +
+      "<div class=\"date-info\">" +
+        "<div class=\"date-name\">" + d.name + "</div>" +
+        "<div class=\"date-range\">" +
+          '<input type="date" value="' + d.start + '" class="date-inp" data-id="' + d.id + '" data-field="start">' +
           " &rarr; " +
-          "<input type="date" value="" + d.end + "" class="date-inp" data-id="" + d.id + "" data-field="end">" +
+          '<input type="date" value="' + d.end + '" class="date-inp" data-id="' + d.id + '" data-field="end">' +
         "</div>" +
       "</div>" +
-      "<button class="date-del" data-id="" + d.id + "">&#10005;</button>";
-    el.appendChild(card);
+      '<button class="date-del" data-id="' + d.id + '">&#10005;</button>' +
+    "</div>";
   }
-  var add = document.createElement("div");
-  add.className = "date-add";
-  add.textContent = "+ Ajouter une période";
-  add.onclick = function(){ addDate(); renderDates(); };
-  el.appendChild(add);
+  html += "<div class=\"date-add\" id=\"addDateBtn\">+ Ajouter une periode</div>";
+  el.innerHTML = html;
   
-  // Date change handlers
-  el.querySelectorAll(".date-inp").forEach(function(inp) {
-    inp.onchange = function() {
-      var date = shootDates.find(function(x) { return x.id === this.dataset.id; }.bind(this));
-      if (date) date[this.dataset.field] = this.value;
-    };
-  });
+  // Bind date changes
+  var inps = el.querySelectorAll(".date-inp");
+  for (var j = 0; j < inps.length; j++) {
+    (function(inp) {
+      inp.onchange = function() {
+        var date = shootDates.find(function(x) { return x.id === inp.dataset.id; });
+        if (date) date[inp.dataset.field] = inp.value;
+      };
+    })(inps[j]);
+  }
   
-  // Delete handlers  
-  el.querySelectorAll(".date-del").forEach(function(btn) {
-    btn.onclick = function() {
-      shootDates = shootDates.filter(function(x) { return x.id !== this.dataset.id; }.bind(this));
-      renderDates();
-    };
-  });
-}
-function addDate() {
-  const name = prompt("Nom de la période :");
-  if (!name) return;
-  shootDates.push({ id:"d"+Date.now(), name, start:"", end:"" });
-  renderDates();
-}
-
-
-// ─── RENDER (real Airtable data) ───
-const _CACHE = { projos: [], grip: [], loaded: false };
-async function loadAPIData() {
-  try {
-    const [p, g] = await Promise.all([
-      fetch('/api/projectors').then(r=>r.json()),
-      fetch('/api/grip').then(r=>r.json())
-    ]);
-    _CACHE.projos = (p.records||[]).map(r => ({
-      n: r.fields.Projecteur || r.fields.Nom || "?",
-      b: r.fields.Marque || r.fields.Fabricant || "",
-      t: r.fields["Type (complet)"] || r.fields.Type || "",
-      s: r.fields.Caractéristiques || "",
-      w: parseInt(r.fields["Consommation (W)"]) || 0
-    }));
-    _CACHE.grip = (g.records||[]).map(r => ({
-      n: r.fields.Projecteur || r.fields.Nom || "?",
-      s: r.fields.Caractéristiques || "",
-      t: r.fields.Type || ""
-    }));
-    _CACHE.loaded = true;
-    console.log(`✅ Loaded ${_CACHE.projos.length} projectors + ${_CACHE.grip.length} grip`);
-    renderProds();
-  } catch(e) { console.log('API unavailable, using fallback'); }
+  // Bind delete
+  var dels = el.querySelectorAll(".date-del");
+  for (var k = 0; k < dels.length; k++) {
+    (function(btn) {
+      btn.onclick = function() {
+        shootDates = shootDates.filter(function(x) { return x.id !== btn.dataset.id; });
+        renderDates();
+      };
+    })(dels[k]);
+  }
+  
+  // Bind add
+  document.getElementById("addDateBtn").onclick = function() {
+    var name = prompt("Nom de la periode :");
+    if (!name) return;
+    shootDates.push({ id: "d" + Date.now(), name: name, start: "", end: "" });
+    renderDates();
+  };
 }
 
-
-function filterCatalog() {
-  const q = (document.getElementById("searchInput").value || "").toLowerCase();
-  const cards = document.querySelectorAll("#prodGrid .card");
-  cards.forEach(card => {
-    const text = card.textContent.toLowerCase();
-    card.style.display = text.includes(q) ? "" : "none";
-  });
-}
-
+function addDate() {}
 function renderProds() {
   const grid = document.getElementById("prodGrid");
   const data = _CACHE.loaded ? _CACHE.projos : PRODS;
@@ -759,57 +727,55 @@ function previewLogo(input, imgId) {
   }
 }
 
+
 function generatePDF() {
-  const items = lists[currentList];
+  var items = lists[currentList];
   if (items.length === 0) { alert("Ajoute des equipements d'abord"); return; }
-  const proj = document.getElementById("projName").value || "Projet";
-  const prod = document.getElementById("prodName").value || "";
-  const dp = document.getElementById("dpName").value || "";
-  const listName = document.getElementById("listSelector").selectedOptions[0].text;
-  const totalW = items.reduce((s,i) => s + (i.w||0) * i.q, 0);
-  const totalKg = items.reduce((s,i) => s + (i.kg||0) * i.q, 0);
+  var proj = document.getElementById("projName").value || "Projet";
+  var prod = document.getElementById("prodName").value || "";
+  var dp = document.getElementById("dpName").value || "";
+  var listName = document.getElementById("listSelector").selectedOptions[0].text;
+  var totalW = 0;
+  for (var i = 0; i < items.length; i++) { totalW += (items[i].w || 0) * items[i].q; }
+  var totalKg = 0;
+  for (var i = 0; i < items.length; i++) { totalKg += (items[i].kg || 0) * items[i].q; }
   
-  const scr = String.fromCharCode(60, 115, 99, 114, 105, 112, 116, 62);
-  const esc = String.fromCharCode(60, 47, 115, 99, 114, 105, 112, 116, 62);
+  var rows = "";
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    rows += "<tr>" +
+      '<td style="text-align:center;font-weight:600;">' + item.q + "</td>" +
+      "<td>" + item.n + (item.b ? '<br><span style="font-size:8px;color:#888;">' + item.b + "</span>" : "") + "</td>" +
+      '<td style="text-align:center;">' + (item.w ? item.w + "W" : "-") + "</td>" +
+      '<td style="text-align:center;font-weight:600;">' + ((item.w || 0) * item.q) + "W</td>" +
+    "</tr>";
+  }
   
-  let rows = items.map(item => \`
-    <tr>
-      <td style="text-align:center;font-weight:600;">\${item.q}</td>
-      <td>\${item.n}\${item.b ? '<br><span style="font-size:8px;color:#888;">'+item.b+'</span>' : ""}</td>
-      <td style="text-align:center;">\${item.w ? item.w+"W" : "-"}</td>
-      <td style="text-align:center;font-weight:600;">\${(item.w||0) * item.q}W</td>
-    </tr>
-  \`).join("");
-  
-  const pw = window.open('', '_blank', 'width=800,height=600');
-  pw.document.write('<!DOCTYPE html><html><head><title>LIGHTPREP - ' + proj + '</title><style>');
-  pw.document.write('@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap);');
-  pw.document.write('*{margin:0;padding:0;box-sizing:border-box}');
-  pw.document.write('body{font-family:Inter,sans-serif;font-size:10px;color:#111;padding:20px}');
-  pw.document.write('.h{display:flex;justify-content:space-between;margin-bottom:16px;padding-bottom:8px;border-bottom:1.5px solid #111}');
-  pw.document.write('.h h1{font-size:16px;font-weight:700}.h .s{font-size:9px;color:#555;margin-top:2px}');
-  pw.document.write('.h .r{text-align:right;font-size:8px;color:#777}.h .r b{color:#111}');
-  pw.document.write('table{width:100%;border-collapse:collapse;margin-top:8px}');
-  pw.document.write('th{text-align:left;padding:4px 6px;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:0.3px;border-bottom:1px solid #ddd}');
-  pw.document.write('td{padding:3px 6px;border-bottom:1px solid #f0f0f0}');
-  pw.document.write('.sec{font-size:9px;font-weight:700;padding:6px 0 2px;text-transform:uppercase;color:#333;border-bottom:1px solid #ddd;margin-top:6px}');
-  pw.document.write('.sum{margin-top:12px;padding-top:6px;border-top:1px solid #ddd;display:flex;justify-content:space-between;font-size:9px}');
-  pw.document.write('.f{margin-top:20px;font-size:7px;color:#888;text-align:center}');
-  pw.document.write('</style></head><body>');
-  pw.document.write('<div class="h"><div><h1>LISTE LUMIERE</h1><div class="s">' + proj + (prod ? ' &mdash; ' + prod : '') + '</div></div>');
+  var pw = window.open("", "_blank", "width=800,height=600");
+  pw.document.write("<!DOCTYPE html><html><head><title>LIGHTPREP - " + proj + "</title><style>");
+  pw.document.write("@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap);");
+  pw.document.write("*{margin:0;padding:0}body{font-family:Inter,sans-serif;font-size:10px;color:#111;padding:20px}");
+  pw.document.write(".hdr{display:flex;justify-content:space-between;margin-bottom:16px;padding-bottom:8px;border-bottom:1.5px solid #111}");
+  pw.document.write(".hdr h1{font-size:16px;font-weight:700}.hdr .s{font-size:9px;color:#555}.hdr .r{text-align:right;font-size:8px;color:#777}.hdr .r b{color:#111}");
+  pw.document.write("table{width:100%;border-collapse:collapse;margin-top:8px}");
+  pw.document.write("th{text-align:left;padding:4px 6px;font-size:8px;color:#888;text-transform:uppercase;border-bottom:1px solid #ddd}");
+  pw.document.write("td{padding:3px 6px;border-bottom:1px solid #f0f0f0}");
+  pw.document.write(".sec{font-size:9px;font-weight:700;padding:6px 0;text-transform:uppercase;color:#333;border-bottom:1px solid #ddd;margin-top:6px}");
+  pw.document.write(".sum{margin-top:12px;padding-top:6px;border-top:1px solid #ddd;display:flex;justify-content:space-between;font-size:9px}");
+  pw.document.write(".ftr{margin-top:20px;font-size:7px;color:#888;text-align:center}");
+  pw.document.write("</style></head><body>");
+  pw.document.write('<div class="hdr"><div><h1>LISTE LUMIERE</h1><div class="s">' + proj + '</div></div>');
   pw.document.write('<div class="r"><div>Directeur de la Photographie</div><div><b>' + dp + '</b></div><div style="margin-top:4px;"><small>Liste: ' + listName + '</small></div></div></div>');
   pw.document.write('<div class="sec">Equipement</div>');
   pw.document.write('<table><thead><tr><th>Qte</th><th>Materiel</th><th>Puiss.</th><th>Total</th></tr></thead><tbody>' + rows + '</tbody></table>');
-  pw.document.write('<div class="sum"><div><b>Total:</b> ' + items.reduce((s,i) => s + i.q, 0) + ' equipements</div>');
+  pw.document.write('<div class="sum"><div><b>Total:</b> ' + items.reduce(function(s,i){return s+i.q;},0) + ' equipements</div>');
   if (totalW > 0) pw.document.write('<div><b>Puissance:</b> ' + (totalW/1000).toFixed(1) + ' KW</div>');
   if (totalKg > 0) pw.document.write('<div><b>Poids:</b> ' + totalKg.toFixed(1) + ' kg</div>');
   pw.document.write('</div>');
-  pw.document.write('<div class="f">Genere par LIGHTPREP &middot; ' + new Date().toLocaleDateString("fr-FR") + '</div>');
-  pw.document.write(scr + 'window.onload=function(){window.print();window.close()}' + esc);
+  pw.document.write('<div class="ftr">Genere par LIGHTPREP</div>');
   pw.document.write('</body></html>');
   pw.document.close();
 }
-
 function saveCurrentList() {
   const items = lists[currentList];
   if (items.length === 0) { alert("Liste vide"); return; }
