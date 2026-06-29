@@ -760,6 +760,22 @@ function renderProds() {
         '<div class="card-ft"><button class="card-add" data-n="' + p.n.replace(/'/g, "") + '">+ Ajouter</button></div></div>';
     }
     grid.innerHTML = cards;
+  // Re-bind filter clicks on pills
+  document.querySelectorAll("#typePills .pill").forEach(function(pill) {
+    pill.onclick = function() {
+      var parent = this.parentElement;
+      var allBtn = parent.querySelector(".pill-all");
+      if (this.classList.contains("pill-all")) {
+        parent.querySelectorAll(".pill").forEach(function(x) { x.classList.remove("on"); });
+        this.classList.add("on");
+      } else {
+        allBtn.classList.remove("on");
+        this.classList.toggle("on");
+      }
+      filterCatalog();
+    };
+  });
+  // Also clear old card-add event listeners to avoid duplicates
   } else {
     const gripData = [
       {cat:"Pieds — Rotules — Déports", items:[{n:"Crank-O-Vator 3.80m",s:"H: 3.80m · 50kg"},{n:"Wind-Up 4m",s:"H: 4m · 100kg"},{n:"Low-Boy Acier",s:"H: 1m · 90kg"},{n:"U126 Cine Acier",s:"H: 3.60m · 85kg"},{n:"Combo 3 Lift",s:"3 sections · 3m"},{n:"Rotule Standard",s:"16/28mm · 20kg"},{n:"Magic Arm",s:"3.3lb"},{n:"Super Clamp",s:"5cm · 100kg"},{n:"Déport 1m",s:"Avec rotule"}]},
@@ -1041,6 +1057,24 @@ document.addEventListener("click", function(e) {
   }
 });
 
+// ─── BIND FILTER PILLS ───
+function bindFilterPills() {
+  document.querySelectorAll("#typePills .pill").forEach(function(pill) {
+    pill.onclick = function() {
+      var parent = this.parentElement;
+      var allBtn = parent.querySelector(".pill-all");
+      if (this.classList.contains("pill-all")) {
+        parent.querySelectorAll(".pill").forEach(function(x) { x.classList.remove("on"); });
+        this.classList.add("on");
+      } else {
+        allBtn.classList.remove("on");
+        this.classList.toggle("on");
+      }
+      filterCatalog();
+    };
+  });
+}
+
 // ─── FILTER CATALOG ───
 function filterCatalog() {
   var q = (document.getElementById("searchInput").value || "").toLowerCase();
@@ -1073,8 +1107,6 @@ function filterCatalog() {
     card.style.display = show ? "" : "none";
   }
 }
-// Make filter pills functional
-// Filter handlers now in filterCatalog()
 loadAPIData();
 renderProds();
 renderDates();
