@@ -430,6 +430,7 @@ loadData();
   </div>
   <div class="date-h"><h2>Périodes de tournage</h2></div>
   <div class="date-list" id="dateList"></div>
+  <div style="padding:16px;"><button class="btn btn-p" onclick="saveProject()" style="width:100%;">✅ Valider le projet</button></div>
 </div>
 
 <!-- CATALOGUE -->
@@ -479,7 +480,7 @@ loadData();
   </div>
   <div class="li-container" id="listContainer"><div class="li-empty" id="listEmpty"><div style="font-size:32px;">📋</div><p style="margin-top:4px;">Ajoute des équipements<br>depuis le catalogue</p></div></div>
   <div class="btm-cta">
-    <button class="btn btn-s">💾 Sauvegarder</button>
+    <button class="btn btn-s" onclick="saveCurrentList()">💾 Sauvegarder</button>
     <button class="btn btn-p" id="pdfBtn" disabled>📄 Pdf projet</button>
   </div>
 </div>
@@ -676,6 +677,17 @@ function previewLogo(input, imgId) {
     };
     reader.readAsDataURL(input.files[0]);
   }
+}
+function saveCurrentList() {
+  const items = lists[currentList];
+  if (items.length === 0) { alert("Liste vide"); return; }
+  const name = prompt("Nom de la liste :", "Liste " + document.getElementById("projName").value);
+  if (!name) return;
+  if (!window._savedLists) window._savedLists = [];
+  window._savedLists.push({ name, date: new Date().toLocaleDateString("fr-FR"), project: document.getElementById("projName").value, items: JSON.parse(JSON.stringify(lists)) });
+  try { localStorage.setItem("lightprep_saved", JSON.stringify(window._savedLists)); } catch(e){}
+  renderSaved();
+  alert("Liste sauvegardée !");
 }
 function saveProject() {
   const data = {
