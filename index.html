@@ -583,23 +583,16 @@ let shootDates = [
   { id:"d2", name:"Tournage principal", start:"", end:"" },
   { id:"d3", name:"Complément", start:"", end:"" },
 ];
+
 function renderDates() {
   const el = document.getElementById("dateList");
   if (!el) return;
-  el.innerHTML = shootDates.map(d => \`
-    <div class="date-card">
-      <div class="date-icon">📅</div>
-      <div class="date-info">
-        <div class="date-name">\${d.name}</div>
-        <div class="date-range">
-          <input type="date" value="\${d.start}" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;" onchange="shootDates.find(x=>x.id==='\${d.id}').start=this.value">
-          →
-          <input type="date" value="\${d.end}" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;" onchange="shootDates.find(x=>x.id==='\${d.id}').end=this.value">
-        </div>
-      </div>
-      <button style="background:none;border:none;color:var(--miami1);font-size:16px;cursor:pointer;" onclick="shootDates=shootDates.filter(x=>x.id!=='\${d.id}');renderDates()">✕</button>
-    </div>
-  \`).join("") + \`<div class="date-add" onclick="addDate()">+ Ajouter une période</div>\`;
+  let html = "";
+  for (let d of shootDates) {
+    html += "<div class="date-card"><div class="date-icon">&#128197;</div><div class="date-info"><div class="date-name">" + d.name + "</div><div class="date-range"><input type="date" value="" + d.start + "" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;" onchange="shootDates.find(x=>x.id===\"" + d.id + "\").start=this.value"> &#8594; <input type="date" value="" + d.end + "" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;" onchange="shootDates.find(x=>x.id===\"" + d.id + "\").end=this.value"></div></div><button style="background:none;border:none;color:var(--miami1);font-size:16px;cursor:pointer;" onclick="shootDates=shootDates.filter(x=>x.id!==\"" + d.id + "\");renderDates()">&#10005;</button></div>";
+  }
+  html += "<div class="date-add" onclick="addDate()">+ Ajouter une periode</div>";
+  el.innerHTML = html;
 }
 function addDate() {
   const name = prompt("Nom de la période :");
