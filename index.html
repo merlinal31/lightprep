@@ -903,6 +903,27 @@ function saveProject() {
 
 
 
+
+
+// ─── ADD FROM DETAIL (opens qty sheet) ───
+function addFromDetail(name) {
+  var data = _CACHE.loaded ? _CACHE.projos : PRODS;
+  var p = data.find(function(x) { return x.n === name; });
+  if (!p) {
+    var grip = window._gripF || [];
+    p = grip.find(function(x) { return x.n === name; });
+  }
+  if (!p) return;
+  
+  // Set pending and open qty sheet
+  window._pending = p;
+  document.getElementById("qtyTitle").textContent = p.n;
+  document.getElementById("qtyValue").textContent = "1";
+  document.getElementById("qtySheet").classList.add("open");
+}
+
+// Also fix the card-add click to use the pending approach
+
 // ─── PRODUCT DETAIL ───
 function showDetail(idx) {
   var data = _CACHE.loaded ? _CACHE.projos : PRODS;
