@@ -26,6 +26,7 @@
   }
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
     background: var(--bg); color: var(--text);
     -webkit-font-smoothing: antialiased;
     max-width: 480px; margin: 0 auto;
@@ -151,6 +152,7 @@
     border: 1px solid var(--border); cursor: pointer; transition: all 0.08s;
   }
   .card:active { transform: scale(0.97); }
+  .card.selected { border-color: var(--miami2); box-shadow: 0 0 0 1px var(--miami2); }
   .card-img {
     width: 100%; height: 72px; background: var(--surface2);
     display: flex; align-items: center; justify-content: center; font-size: 24px;
@@ -413,8 +415,8 @@ loadData();
 <div class="view active" id="v-projet">
   <div class="pf">
     <div class="logo-row">
-      <div class="logo-box"><div class="lb">Logo production</div><div class="logo-ph">+</div></div>
-      <div class="logo-box"><div class="lb">Logo loueur</div><div class="logo-ph">+</div></div>
+      <div class="logo-box"><div class="lb">Logo production</div><label class="logo-ph" style="cursor:pointer;display:flex;align-items:center;justify-content:center;">+<input type="file" accept="image/*" style="display:none" onchange="previewLogo(this,'prodLogo')"></label><img id="prodLogo" style="display:none;width:72px;height:72px;border-radius:10px;object-fit:cover;margin:0 auto;cursor:pointer" onclick="document.getElementById('prodLogoInput').click()"></div>
+      <div class="logo-box"><div class="lb">Logo loueur</div><label class="logo-ph" style="cursor:pointer;display:flex;align-items:center;justify-content:center;">+<input type="file" accept="image/*" style="display:none" onchange="previewLogo(this,'loueurLogo')"></label><img id="loueurLogo" style="display:none;width:72px;height:72px;border-radius:10px;object-fit:cover;margin:0 auto;cursor:pointer"></div>
     </div>
     <div class="fg"><div class="fl">Projet</div><input class="fi" value="LE GRAND SAUT" id="projName"></div>
     <div class="fr">
@@ -582,7 +584,8 @@ function renderProds() {
     window._gripF = gripData.flatMap(s=>s.items);
     grid.innerHTML = html;
   }
-  document.querySelectorAll(".card-add").forEach(b => b.addEventListener("click", function() {
+  document.querySelectorAll(".card").forEach(c => c.addEventListener("click", function(e) { if(e.target.closest('.card-add')) return; this.classList.toggle('selected'); }));
+document.querySelectorAll(".card-add").forEach(b => b.addEventListener("click", function() {
     const idx = +this.dataset.i;
     const isG = this.dataset.g === "1";
     window._pending = isG ? window._gripF[idx] : PRODS[idx];
@@ -629,6 +632,43 @@ function setCatMode(m,btn) {
 }
 function togL(el) { el.querySelector(".lc-chk").classList.toggle("on"); }
 
+function previewLogo(input, imgId) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = document.getElementById(imgId);
+      img.src = e.target.result;
+      img.style.display = 'block';
+      input.parentElement.style.display = 'none';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+function saveProject() {
+  const data = {
+    name: document.getElementById('projName').value,
+    prod: document.getElementById('prodName').value,
+    real: document.getElementById('realName').value,
+    dp: document.getElementById('dpName').value,
+    chef: document.getElementById('chefName').value
+  };
+  try { localStorage.setItem('lightprep_project', JSON.stringify(data)); } catch(e) {}
+  alert('Projet sauvegardé !');
+}
+// Make filter pills functional
+document.querySelectorAll(".pill").forEach(p => {
+  p.addEventListener("click", function() {
+    const parent = this.parentElement;
+    const all = parent.querySelector(".pill-all");
+    if (this.classList.contains("pill-all")) {
+      parent.querySelectorAll(".pill").forEach(x => x.classList.remove("on"));
+      this.classList.add("on");
+    } else {
+      all.classList.remove("on");
+      this.classList.toggle("on");
+    }
+  });
+});
 renderProds();
 upd();
 </script>
