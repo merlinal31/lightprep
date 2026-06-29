@@ -656,7 +656,22 @@ async function loadAPIData() {
     });
     _CACHE.loaded = true;
     console.log("Loaded " + _CACHE.projos.length + " projectors");
-    renderProds();
+    
+    // Load Cloudinary image mapping
+    try {
+      var cResp = await fetch("/cloudinary.json");
+      var cData = await cResp.json();
+      if (cData && cData.images) {
+        for (var ci = 0; ci < _CACHE.projos.length; ci++) {
+          var p = _CACHE.projos[ci];
+          if (cData.images[p.n]) {
+            p.img = cData.images[p.n];
+          }
+        }
+        console.log("Cloudinary images applied");
+      }
+    } catch(e) { console.log("No Cloudinary mapping"); }
+renderProds();
   } catch(e) {
     console.log("API unavailable, using mock data");
   }
