@@ -363,7 +363,42 @@
     border-radius: 7px; font-weight: 700;
   }
 </style>
+
+<script>
+// ─── FETCH REAL DATA FROM RAILWAY API ───
+async function loadData() {
+  try {
+    const [projoRes, gripRes] = await Promise.all([
+      fetch('/api/projectors'),
+      fetch('/api/grip')
+    ]);
+    const projoData = await projoRes.json();
+    const gripData = await gripRes.json();
+    
+    window.REAL_PROJECTORS = (projoData.records || []).map(r => ({
+      n: r.fields.Projecteur || r.fields.Nom || "",
+      b: r.fields.Marque || r.fields.Fabricant || "",
+      t: r.fields["Type (complet)"] || r.fields.Type || "",
+      s: r.fields.Caractéristiques || "",
+      w: r.fields["Consommation (W)"] || 0
+    }));
+    
+    window.REAL_GRIP = (gripData.records || []).map(r => ({
+      n: r.fields.Nom || "",
+      s: r.fields.Caractéristiques || r.fields.Type || "",
+      t: r.fields.Type || ""
+    }));
+    
+    console.log(`Loaded ${window.REAL_PROJECTORS.length} projectors`);
+    console.log(`Loaded ${window.REAL_GRIP.length} grip items`);
+  } catch(e) {
+    console.log('API unavailable, using mock data');
+  }
+}
+loadData();
+</script>
 </head>
+
 <body>
 
 <div class="header">
