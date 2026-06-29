@@ -734,72 +734,53 @@ function previewLogo(input, imgId) {
 
 function generatePDF() {
   const items = lists[currentList];
-  if (items.length === 0) { alert("Ajoute des équipements à ta liste d'abord"); return; }
-  
+  if (items.length === 0) { alert("Ajoute des equipements d'abord"); return; }
   const proj = document.getElementById("projName").value || "Projet";
   const prod = document.getElementById("prodName").value || "";
   const dp = document.getElementById("dpName").value || "";
   const listName = document.getElementById("listSelector").selectedOptions[0].text;
-  
   const totalW = items.reduce((s,i) => s + (i.w||0) * i.q, 0);
   const totalKg = items.reduce((s,i) => s + (i.kg||0) * i.q, 0);
   
-  // Build the print content in a hidden frame
-  let tableRows = items.map(item => \`
+  const scr = String.fromCharCode(60, 115, 99, 114, 105, 112, 116, 62);
+  const esc = String.fromCharCode(60, 47, 115, 99, 114, 105, 112, 116, 62);
+  
+  let rows = items.map(item => \`
     <tr>
       <td style="text-align:center;font-weight:600;">\${item.q}</td>
       <td>\${item.n}\${item.b ? '<br><span style="font-size:8px;color:#888;">'+item.b+'</span>' : ""}</td>
-      <td>\${item.w ? item.w+"W" : "-"}</td>
+      <td style="text-align:center;">\${item.w ? item.w+"W" : "-"}</td>
       <td style="text-align:center;font-weight:600;">\${(item.w||0) * item.q}W</td>
     </tr>
   \`).join("");
   
-  const printWin = window.open('', '_blank', 'width=800,height=600');
-  printWin.document.write(\`
-    <html><head>
-    <title>LIGHTPREP - \${proj}</title>
-    <style>
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body { font-family: 'Inter', sans-serif; font-size: 10px; color: #111; padding: 20px; }
-      .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1.5px solid #111; }
-      .header h1 { font-size: 16px; font-weight: 700; }
-      .header .sub { font-size: 9px; color: #555; margin-top: 2px; }
-      .header .right { text-align: right; font-size: 8px; color: #777; }
-      .header .right strong { color: #111; }
-      table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-      th { text-align: left; padding: 4px 6px; font-size: 8px; color: #888; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid #ddd; }
-      td { padding: 3px 6px; border-bottom: 1px solid #f0f0f0; }
-      .section { font-size: 9px; font-weight: 700; padding: 6px 0 2px; text-transform: uppercase; color: #333; border-bottom: 1px solid #ddd; margin-top: 6px; }
-      .summary { margin-top: 12px; padding-top: 6px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; font-size: 9px; }
-      .footer { margin-top: 20px; font-size: 7px; color: #888; text-align: center; }
-    </style>
-    </head><body>
-    <div class="header">
-      <div><h1>LISTE LUMIÈRE</h1><div class="sub">\${proj} \${prod ? "— " + prod : ""}</div></div>
-      <div class="right"><div>Directeur de la Photographie</div><div><strong>\${dp}</strong></div><div style="margin-top:4px;"><small>Liste: \${listName}</small></div></div>
-    </div>
-    
-    <div class="section">Équipement</div>
-    <table>
-      <thead><tr><th>Qté</th><th>Matériel</th><th>Puiss.</th><th>Total</th></tr></thead>
-      <tbody>\${tableRows}</tbody>
-    </table>
-    
-    <div class="summary">
-      <div><strong>Total:</strong> \${items.reduce((s,i) => s + i.q, 0)} équipements</div>
-      <div>\${totalW > 0 ? '<strong>Puissance:</strong> ' + (totalW/1000).toFixed(1) + ' KW' : ""}</div>
-      <div>\${totalKg > 0 ? '<strong>Poids:</strong> ' + totalKg.toFixed(1) + ' kg' : ""}</div>
-    </div>
-    
-    <div class="footer">Généré par LIGHTPREP · \${new Date().toLocaleDateString("fr-FR")}</div>
-    
-    <script>
-      window.onload = function() { window.print(); window.close(); };
-    <\/script>
-    </body></html>
-  \`);
-  printWin.document.close();
+  const pw = window.open('', '_blank', 'width=800,height=600');
+  pw.document.write('<!DOCTYPE html><html><head><title>LIGHTPREP - ' + proj + '</title><style>');
+  pw.document.write('@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap);');
+  pw.document.write('*{margin:0;padding:0;box-sizing:border-box}');
+  pw.document.write('body{font-family:Inter,sans-serif;font-size:10px;color:#111;padding:20px}');
+  pw.document.write('.h{display:flex;justify-content:space-between;margin-bottom:16px;padding-bottom:8px;border-bottom:1.5px solid #111}');
+  pw.document.write('.h h1{font-size:16px;font-weight:700}.h .s{font-size:9px;color:#555;margin-top:2px}');
+  pw.document.write('.h .r{text-align:right;font-size:8px;color:#777}.h .r b{color:#111}');
+  pw.document.write('table{width:100%;border-collapse:collapse;margin-top:8px}');
+  pw.document.write('th{text-align:left;padding:4px 6px;font-size:8px;color:#888;text-transform:uppercase;letter-spacing:0.3px;border-bottom:1px solid #ddd}');
+  pw.document.write('td{padding:3px 6px;border-bottom:1px solid #f0f0f0}');
+  pw.document.write('.sec{font-size:9px;font-weight:700;padding:6px 0 2px;text-transform:uppercase;color:#333;border-bottom:1px solid #ddd;margin-top:6px}');
+  pw.document.write('.sum{margin-top:12px;padding-top:6px;border-top:1px solid #ddd;display:flex;justify-content:space-between;font-size:9px}');
+  pw.document.write('.f{margin-top:20px;font-size:7px;color:#888;text-align:center}');
+  pw.document.write('</style></head><body>');
+  pw.document.write('<div class="h"><div><h1>LISTE LUMIERE</h1><div class="s">' + proj + (prod ? ' &mdash; ' + prod : '') + '</div></div>');
+  pw.document.write('<div class="r"><div>Directeur de la Photographie</div><div><b>' + dp + '</b></div><div style="margin-top:4px;"><small>Liste: ' + listName + '</small></div></div></div>');
+  pw.document.write('<div class="sec">Equipement</div>');
+  pw.document.write('<table><thead><tr><th>Qte</th><th>Materiel</th><th>Puiss.</th><th>Total</th></tr></thead><tbody>' + rows + '</tbody></table>');
+  pw.document.write('<div class="sum"><div><b>Total:</b> ' + items.reduce((s,i) => s + i.q, 0) + ' equipements</div>');
+  if (totalW > 0) pw.document.write('<div><b>Puissance:</b> ' + (totalW/1000).toFixed(1) + ' KW</div>');
+  if (totalKg > 0) pw.document.write('<div><b>Poids:</b> ' + totalKg.toFixed(1) + ' kg</div>');
+  pw.document.write('</div>');
+  pw.document.write('<div class="f">Genere par LIGHTPREP &middot; ' + new Date().toLocaleDateString("fr-FR") + '</div>');
+  pw.document.write(scr + 'window.onload=function(){window.print();window.close()}' + esc);
+  pw.document.write('</body></html>');
+  pw.document.close();
 }
 
 function saveCurrentList() {
