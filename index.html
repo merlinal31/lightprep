@@ -629,12 +629,21 @@ async function loadAPIData() {
     const pData = await pResp.json();
     const gData = await gResp.json();
     _CACHE.projos = (pData.records || []).map(function(r) {
+      var f = r.fields;
+      var imgs = [];
+      if (f["Pieces jointes"] && f["Pieces jointes"].length > 0) {
+        for (var ii = 0; ii < f["Pieces jointes"].length; ii++) {
+          if (f["Pieces jointes"][ii].url) imgs.push(f["Pieces jointes"][ii].url);
+        }
+      }
       return {
-        n: r.fields.Projecteur || r.fields.Nom || "?",
-        b: r.fields.Marque || r.fields.Fabricant || "",
-        t: r.fields["Type (complet)"] || r.fields.Type || "",
-        s: r.fields.Caracteristiques || "",
-        w: parseInt(r.fields["Consommation (W)"]) || 0
+        n: f.Projecteur || f.Nom || "?",
+        b: f.Marque || f.Fabricant || "",
+        t: f["Type (complet)"] || f.Type || "",
+        s: f.Caracteristiques || "",
+        w: parseInt(f["Consommation (W)"]) || 0,
+        kg: parseFloat(f["Poids (kg)"]) || 0,
+        img: imgs.length > 0 ? imgs[0] : ""
       };
     });
     _CACHE.grip = (gData.records || []).map(function(r) {
@@ -727,7 +736,7 @@ function renderProds() {
   
   if (catMode === "projo") {
     if (!_CACHE.loaded && data.length === PRODS.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text3);"><div style="font-size:30px;margin-bottom:8px;">⏳</div><p>Chargement des projecteurs...</p></div>'; return; }
-    grid.innerHTML = data.map((p,i) => `<div class="card"><div class="card-img">💡</div><div class="card-bd"><div class="card-n">${p.n}</div><div class="card-b">${p.b}</div><div class="card-ts"><span class="card-t">${p.t}</span>${p.w ? `<span class="card-t w">${p.w}w</span>` : ""}</div><div class="card-s">${(p.s||"").slice(0,60)}</div></div><div class="card-ft"><button class="card-add" data-i="${i}">+ Ajouter</button></div></div>`).join("");
+    grid.innerHTML = data.map(function(p,i) { var img = p.img ? 'style="background-image:url(\\u0022' + p.img + '\\u0022);background-size:cover;background-position:center;"><img src="' + p.img + '" style="width:100%;height:100%;object-fit:cover;display:block"' : '>'; return '<div class="card" onclick="showDetail('+i+')"><div class="card-img" ' + img💡</div><div class="card-bd"><div class="card-n">${p.n}</div><div class="card-b">${p.b}</div><div class="card-ts"><span class="card-t">${p.t}</span>${p.w ? `<span class="card-t w">${p.w}w</span>` : ""}</div><div class="card-s">${(p.s||"").slice(0,60)}</div></div><div class="card-ft"><button class="card-add" data-i="${i}">+ Ajouter</button></div></div>`).join("");
   } else {
     const gripData = [
       {cat:"Pieds — Rotules — Déports", items:[{n:"Crank-O-Vator 3.80m",s:"H: 3.80m · 50kg"},{n:"Wind-Up 4m",s:"H: 4m · 100kg"},{n:"Low-Boy Acier",s:"H: 1m · 90kg"},{n:"U126 Cine Acier",s:"H: 3.60m · 85kg"},{n:"Combo 3 Lift",s:"3 sections · 3m"},{n:"Rotule Standard",s:"16/28mm · 20kg"},{n:"Magic Arm",s:"3.3lb"},{n:"Super Clamp",s:"5cm · 100kg"},{n:"Déport 1m",s:"Avec rotule"}]},
@@ -879,6 +888,79 @@ function saveProject() {
   try { localStorage.setItem('lightprep_project', JSON.stringify(data)); } catch(e) {}
   alert('Projet sauvegardé !');
 }
+
+
+
+// ─── PRODUCT DETAIL ───
+function showDetail(idx) {
+  var data = _CACHE.loaded ? _CACHE.projos : PRODS;
+  var p = data[idx];
+  if (!p) return;
+  
+  var sheet = document.getElementById("detailSheet") || createDetailSheet();
+  var img = p.img ? '<img src="' + p.img + '" style="width:100%;height:180px;object-fit:cover;border-radius:8px;margin-bottom:12px;background:var(--surface2);" onerror="this.style.display=\'none\'">' : '<div style="width:100%;height:80px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:12px;">\uD83D\uDCA1</div>';
+  
+  sheet.querySelector(".sheet-c").innerHTML =
+    '<div class="sheet-handle"></div>' +
+    '<div class="sheet-title" style="font-size:16px;font-weight:700;margin-bottom:4px;">' + p.n + '</div>' +
+    (p.b ? '<div style="text-align:center;color:var(--text2);font-size:12px;margin-bottom:8px;">' + p.b + '</div>' : "") +
+    img +
+    (p.t ? '<div style="font-size:11px;color:var(--text2);margin-bottom:4px;"><b>Type:</b> ' + p.t + '</div>' : "") +
+    (p.w ? '<div style="font-size:11px;color:var(--text2);margin-bottom:4px;"><b>Puissance:</b> ' + p.w + ' W</div>' : "") +
+    (p.kg ? '<div style="font-size:11px;color:var(--text2);margin-bottom:4px;"><b>Poids:</b> ' + p.kg + ' kg</div>' : "") +
+    (p.s ? '<div style="font-size:10px;color:var(--text3);margin-bottom:12px;"><b>Caracteristiques:</b> ' + p.s + '</div>' : "") +
+    '<button class="btn btn-p" onclick="addItemToList(\\u0027' + p.n.replace(/\\u0027/g,"") + '\\u0027);closeDetail()" style="width:100%;">+ Ajouter a la liste</button>' +
+    '<button class="btn btn-s" onclick="closeDetail()" style="width:100%;margin-top:6px;">Fermer</button>';
+  
+  sheet.classList.add("open");
+}
+
+function createDetailSheet() {
+  var sheet = document.createElement("div");
+  sheet.className = "sheet";
+  sheet.id = "detailSheet";
+  sheet.innerHTML = '<div class="sheet-c" style="max-height:70vh;overflow-y:auto;"></div>';
+  sheet.onclick = function(e) { if (e.target === sheet) closeDetail(); };
+  document.body.appendChild(sheet);
+  return sheet;
+}
+
+function closeDetail() {
+  var s = document.getElementById("detailSheet");
+  if (s) s.classList.remove("open");
+}
+
+function addItemToList(name) {
+  var data = _CACHE.loaded ? _CACHE.projos : PRODS;
+  var p = data.find(function(x) { return x.n === name; });
+  if (!p) {
+    // Try grip data too
+    var grip = window._gripF || [];
+    p = grip.find(function(x) { return x.n === name; });
+  }
+  if (!p) return;
+  
+  var items = lists[currentList];
+  var ex = items.find(function(x) { return x.n === p.n; });
+  if (ex) { ex.q++; } else { items.push({ n: p.n, b: p.b||"", w: p.w||0, kg: p.kg||0, q: 1 }); }
+  upd();
+}
+
+// Override card-add to use addItemToList
+document.addEventListener("click", function(e) {
+  var btn = e.target.closest(".card-add");
+  if (!btn) return;
+  e.stopPropagation();
+  var name = btn.dataset.n || btn.textContent;
+  // Find the product by name
+  var data = _CACHE.loaded ? _CACHE.projos : PRODS;
+  var p = data.find(function(x) { return x.n === name; });
+  if (p) {
+    showDetail(data.indexOf(p));
+  } else {
+    addItemToList(name);
+  }
+});
 
 // ─── FILTER CATALOG ───
 function filterCatalog() {
