@@ -500,13 +500,26 @@ loadData();
     <span class="pill">Hmi</span>
     <span class="pill">Tungsten</span>
   </div>
-  <div class="filter-strip" id="brandPills">
-    <span class="pill pill-all on">Toutes marques</span>
-    <span class="pill">Arri</span>
-    <span class="pill">Aputure</span>
-    <span class="pill">Nanlux</span>
-    <span class="pill">Kino Flo</span>
-    <span class="pill">Creamsource</span>
+  <div class="filter-strip" id="brandFilter" style="display:flex;gap:4px;padding:6px 12px;align-items:center;">
+    <select id="brandSelect" onchange="filterCatalog()" style="flex:1;padding:5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:11px;font-family:inherit;outline:none;-webkit-appearance:none;">
+      <option value="">Toutes les marques</option>
+      <option value="Arri">ARRI</option>
+      <option value="Aputure">Aputure</option>
+      <option value="Nanlux">Nanlux</option>
+      <option value="Kino Flo">Kino Flo</option>
+      <option value="Creamsource">Creamsource</option>
+      <option value="Astera">Astera</option>
+      <option value="Litepanels">Litepanels</option>
+      <option value="Panalux">Panalux</option>
+      <option value="Prolycht">Prolycht</option>
+      <option value="K5600">K5600</option>
+      <option value="Rotolight">Rotolight</option>
+      <option value="Quasar">Quasar Science</option>
+      <option value="Godox">Godox</option>
+      <option value="SGM">SGM</option>
+      <option value="ETC">ETC</option>
+      <option value="Chauvet">Chauvet</option>
+    </select>
   </div>
   <div class="grid" id="prodGrid"></div>
 </div>
@@ -867,19 +880,7 @@ function saveProject() {
   alert('Projet sauvegardé !');
 }
 // Make filter pills functional
-document.querySelectorAll(".pill").forEach(p => {
-  p.addEventListener("click", function() {
-    const parent = this.parentElement;
-    const all = parent.querySelector(".pill-all");
-    if (this.classList.contains("pill-all")) {
-      parent.querySelectorAll(".pill").forEach(x => x.classList.remove("on"));
-      this.classList.add("on");
-    } else {
-      all.classList.remove("on");
-      this.classList.toggle("on");
-    }
-  });
-});
+// Filter handlers now in filterCatalog()
 loadAPIData();
 renderProds();
 renderDates();
