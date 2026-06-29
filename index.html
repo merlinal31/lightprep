@@ -444,7 +444,42 @@ loadData();
     </div>
   </div>
   <div class="date-h"><h2>Périodes de tournage</h2></div>
-  <div class="date-list" id="dateList"></div>
+  <div class="date-list" id="dateList">
+  <div class="date-card">
+    <div class="date-icon">&#128197;</div>
+    <div class="date-info">
+      <div class="date-name">Prépa</div>
+      <div class="date-range">
+        <input type="date" class="date-inp" value="" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;">
+        &rarr;
+        <input type="date" class="date-inp" value="" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;">
+      </div>
+    </div>
+  </div>
+  <div class="date-card">
+    <div class="date-icon">&#128197;</div>
+    <div class="date-info">
+      <div class="date-name">Tournage principal</div>
+      <div class="date-range">
+        <input type="date" class="date-inp" value="" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;">
+        &rarr;
+        <input type="date" class="date-inp" value="" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;">
+      </div>
+    </div>
+  </div>
+  <div class="date-card">
+    <div class="date-icon">&#128197;</div>
+    <div class="date-info">
+      <div class="date-name">Complément</div>
+      <div class="date-range">
+        <input type="date" class="date-inp" value="" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;">
+        &rarr;
+        <input type="date" class="date-inp" value="" style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;">
+      </div>
+    </div>
+  </div>
+  <div class="date-add" onclick="var n=prompt('Nom :');if(n){var d=this.parentElement;var c=document.createElement('div');c.className='date-card';c.innerHTML='<div class=\\u0022date-icon\\u0022>&#128197;</div><div class=\\u0022date-info\\u0022><div class=\\u0022date-name\\u0022>'+n+'</div><div class=\\u0022date-range\\u0022><input type=\\u0022date\\u0022 style=\\u0022background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;\\u0022>&rarr;<input type=\\u0022date\\u0022 style=\\u0022background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 6px;color:var(--text);font-size:10px;font-family:inherit;\\u0022></div></div>';d.insertBefore(c,this);}">+ Ajouter une période</div>
+</div>
   <div style="padding:16px;"><button class="btn btn-p" onclick="saveProject()" style="width:100%;">✅ Valider le projet</button></div>
 </div>
 
