@@ -779,7 +779,7 @@ function renderProds() {
         '<div class="card-b">' + (p.b || "") + '</div>' +
         '<div class="card-ts">' + (p.t ? '<span class="card-t">' + p.t + '</span>' : "") + (p.w ? '<span class="card-t w">' + p.w + 'w</span>' : "") + '</div>' +
         '<div class="card-s">' + (p.s || "").slice(0,60) + '</div></div>' +
-        '<div class="card-ft"><button class="card-add" onclick="directAdd(\u0027' + p.n.replace(/\u0027/g,"") + '\u0027)">+ Ajouter</button></div></div>';
+        '<div class="card-ft"><button class="card-add" data-n="' + p.n.replace(/'/g, "") + '">+ Ajouter</button></div></div>';
     }
     grid.innerHTML = cards;
   // Re-bind filter clicks on pills
@@ -817,40 +817,40 @@ function renderProds() {
     window._gripF = gripData.flatMap(s=>s.items);
     grid.innerHTML = html;
   }
-  document.querySelectorAll(".card").forEach(c => c.addEventListener("click", function(e) { if(e.target.closest('.card-add')) return; this.classList.toggle('selected'); }));
-document.querySelectorAll(".card-add").forEach(b => b.addEventListener("click", function() {
-    const idx = +this.dataset.i;
-    const isG = this.dataset.g === "1";
-    window._pending = isG ? window._gripF[idx] : PRODS[idx];
-    if (window._pending) { document.getElementById("qtyTitle").textContent = window._pending.n; document.getElementById("qtyValue").textContent = "1"; document.getElementById("qtySheet").classList.add("open"); }
-  }));
-}
-
-function upd() {
-  const items = lists[currentList];
-  const n = items.reduce((s,i)=>s+i.q,0);
-  document.getElementById("tabBadge").textContent = n;
-  document.getElementById("lCount").textContent = n;
-  document.getElementById("lPower").textContent = items.reduce((s,i)=>s+(i.w||0)*i.q,0) > 1000 ? (items.reduce((s,i)=>s+(i.w||0)*i.q,0)/1000).toFixed(1)+"K" : items.reduce((s,i)=>s+(i.w||0)*i.q,0);
-  document.getElementById("lWeight").textContent = items.reduce((s,i)=>s+(i.kg||0)*i.q,0).toFixed(1);
-  if (n === 0) { document.getElementById("listContainer").innerHTML = '<div class="li-empty"><div style="font-size:32px;">📋</div><p style="margin-top:4px;">Ajoute des équipements<br>depuis le catalogue</p></div>'; document.getElementById("pdfBtn").disabled = true; return; }
-  document.getElementById("pdfBtn").disabled = false;
-  document.getElementById("listContainer").innerHTML = items.map((item,i) => `<div class="li-item"><div class="li-qty"><button onclick="cq(${i},-1)">−</button><span>${item.q}</span><button onclick="cq(${i},1)">+</button></div><div class="li-info"><div class="li-n">${item.n}</div><div class="li-d">${item.b||""} ${item.w?"· "+item.w+"w":""}</div></div><button class="li-rm" onclick="rm(${i})">✕</button></div>`).join("");
-}
-function cq(i,d) { if (lists[currentList][i]) { lists[currentList][i].q = Math.max(1, lists[currentList][i].q + d); upd(); } }
-function rm(i) { lists[currentList].splice(i,1); upd(); }
-function chgQty(d) { let v = parseInt(document.getElementById("qtyValue").textContent) + d; if (v<1) v=1; if (v>99) v=99; document.getElementById("qtyValue").textContent = v; }
-function confirmQty() {
-  try {
-    var q = parseInt(document.getElementById("qtyValue").textContent) || 1;
-    var p = window._pending;
-    if (!p) { console.log("no pending item"); return; }
-    var items = lists[currentList];
-    var found = false;
-    for (var i = 0; i < items.length; i++) {
-      if (items[i].n === p.n) { items[i].q += q; found = true; break; }
-    }
-    if (!found) items.push({ n: p.n, b: p.b||"", w: p.w||0, kg: p.kg||0, q: q });
+  document.querySelectorAll(".card-add").forEach(function(b) {
+    b.onclick = function(e) {
+      e.stopPropagation();
+      var name = this.getAttribute("data-n") || this.textContent.trim().replace("+ Ajouter", "").trim();
+      if (!name) return;
+      
+      // Find product in all data sources
+      var p = null;
+      if (typeof _CACHE !== "undefined" && _CACHE.loaded && _CACHE.projos.length > 0) {
+        for (var si = 0; si < _CACHE.projos.length; si++) {
+          if (_CACHE.projos[si].n === name) { p = _CACHE.projos[si]; break; }
+        }
+      }
+      if (!p && typeof PRODS !== "undefined") {
+        for (var si = 0; si < PRODS.length; si++) {
+          if (PRODS[si].n === name) { p = PRODS[si]; break; }
+        }
+      }
+      if (!p) { 
+        // Try grip
+        var grip = window._gripF || [];
+        if (this.dataset.g) grip = window._gripF || [];
+        var idx = parseInt(this.dataset.i) || 0;
+        if (this.dataset.g && window._gripF && window._gripF[idx]) p = window._gripF[idx];
+        if (!p) for (var si = 0; si < grip.length; si++) { if (grip[si].n === name) { p = grip[si]; break; } }
+      }
+      if (!p) return;
+      
+      window._pending = p;
+      document.getElementById("qtyTitle").textContent = p.n;
+      document.getElementById("qtyValue").textContent = "1";
+      document.getElementById("qtySheet").classList.add("open");
+    };
+  });
     closeQty();
     upd();
     console.log("Added", q, "x", p.n);
