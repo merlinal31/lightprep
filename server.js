@@ -16,7 +16,7 @@ const G_TABLE = 'tbl0yfD59tBOsbBRJ';
 function fetchAll(table, res) {
   let all = [];
   function page(offset) {
-    let url = `https://api.airtable.com/v0/${BASE_ID}/${table}?maxRecords=100`;
+    let url = `https://api.airtable.com/v0/${BASE_ID}/${table}?maxRecords=1000`;
     if (offset) url += `&offset=${offset}`;
     https.get(url, { headers: { 'Authorization': `Bearer ${envToken}` } }, (resp) => {
       let d = '';
